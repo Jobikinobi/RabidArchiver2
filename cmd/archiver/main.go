@@ -9,16 +9,17 @@ import (
 )
 
 var (
-	configPath string
-	sourcePath string
-	b2KeyID    string
-	b2AppKey   string
-	bucket     string
-	summarize  string
-	stubMode   string
-	costCap    float64
-	appConfig  *config.Config
-	debugMode  bool
+	configPath      string
+	sourcePath      string
+	b2KeyID         string
+	b2AppKey        string
+	bucket          string
+	summarize       string
+	stubMode        string
+	costCap         float64
+	appConfig       *config.Config
+	debugMode       bool
+	interactiveMode bool
 )
 
 func main() {
@@ -41,15 +42,24 @@ summarizes documents, uploads to Backblaze B2, and provides a searchable index.`
 	rootCmd.Flags().StringVar(&summarize, "summarize", "default", "Summarization level: none, basic, default, or full")
 	rootCmd.Flags().StringVar(&stubMode, "stub-mode", "webloc", "Local stub format: webloc, shortcut, or none")
 	rootCmd.Flags().Float64Var(&costCap, "cost-cap", 5.0, "Maximum LLM spend in USD")
+	rootCmd.Flags().BoolVarP(&interactiveMode, "interactive", "i", false, "Start in interactive mode")
 
-	// Mark required flags
-	rootCmd.MarkFlagRequired("source")
-	rootCmd.MarkFlagRequired("b2-key-id")
-	rootCmd.MarkFlagRequired("b2-app-key")
-	rootCmd.MarkFlagRequired("bucket")
+	// Only mark flags as required if not in interactive mode
+	isInteractiveArg := false
+	if len(os.Args) > 1 {
+		isInteractiveArg = os.Args[1] == "interactive" || os.Args[1] == "help"
+	}
+
+	if !interactiveMode && !isInteractiveArg {
+		rootCmd.MarkFlagRequired("source")
+		rootCmd.MarkFlagRequired("b2-key-id")
+		rootCmd.MarkFlagRequired("b2-app-key")
+		rootCmd.MarkFlagRequired("bucket")
+	}
 
 	// Add subcommands
 	rootCmd.AddCommand(newSearchCommand())
+	rootCmd.AddCommand(newInteractiveCommand())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -115,6 +125,14 @@ func loadConfig(cmd *cobra.Command, args []string) {
 		costCap = appConfig.CostCapUSD
 	}
 
+	// If interactive flag is used, start the interactive command
+	if interactiveMode && cmd.Name() != "interactive" && cmd.Name() != "help" {
+		// We're in root command with interactive flag - pass control to interactive command
+		interactiveCmd := newInteractiveCommand()
+		interactiveCmd.Run(cmd, args)
+		os.Exit(0)
+	}
+
 	// Print API key info in debug mode
 	if debugMode {
 		fmt.Println("Configuration loaded successfully")
@@ -135,6 +153,14 @@ func maskString(s string) string {
 }
 
 func executeArchiver(cmd *cobra.Command, args []string) {
+	// If interactive flag is set, this would have already been handled in loadConfig
+	// This is just a fallback
+	if interactiveMode {
+		interactiveCmd := newInteractiveCommand()
+		interactiveCmd.Run(cmd, args)
+		return
+	}
+
 	fmt.Println("Starting Archiver...")
 	fmt.Printf("Processing source: %s\n", sourcePath)
 	fmt.Printf("Using B2 bucket: %s\n", bucket)
