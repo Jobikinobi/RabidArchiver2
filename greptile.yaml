@@ -1,0 +1,55 @@
+version: 1
+
+# Archiver project Greptile configuration
+rules:
+  # Security rules
+  - name: Hardcoded secrets
+    pattern: "(password|secret|key|token|credential)\\s*[=:]\\s*['\"][^'\"]+['\"]"
+    severity: high
+    message: "Avoid hardcoded secrets in source code"
+    
+  - name: SQL injection risk
+    pattern: "db\\.(Query|Exec)\\([^)]*\\+\\s*[^)]*\\)"
+    severity: high
+    message: "Potential SQL injection, use parameterized queries"
+    
+  # Error handling rules
+  - name: Missing error check
+    pattern: "^\\s*[^=]*[,\\s]err\\s*:=\\s*[^\\n]*$\\s*^\\s*(?!if err !=)"
+    severity: medium
+    message: "Error returned but not checked"
+    
+  - name: Error suppression
+    pattern: "_ = err"
+    severity: medium
+    message: "Error is being suppressed without handling"
+    
+  # Resource management
+  - name: Unclosed resource
+    pattern: "(os\\.Open|sql\\.Open|http\\.Get)[^\\n]*$\\s*^\\s*(?!defer .*Close\\(\\))"
+    severity: medium
+    message: "Resource opened without defer Close()"
+    
+  # Go specific
+  - name: Context deadlines
+    pattern: "context\\.Background\\(\\)"
+    severity: low
+    message: "Consider using context with timeout for external operations"
+    
+  - name: Using fmt.Println in production code
+    pattern: "fmt\\.(Print|Println|Printf)"
+    severity: low
+    message: "Consider using a proper logger instead of fmt"
+    
+  # Project specific
+  - name: Cost cap validation
+    pattern: "cost[^\\n]*>\\s*"
+    severity: medium
+    message: "Ensure cost comparisons respect the COST_CAP_USD limit"
+    
+  - name: Upload error handling
+    pattern: "b2\\.Upload"
+    severity: medium
+    message: "Ensure proper error handling and retries for B2 uploads"
+
+blockerThreshold: medium 

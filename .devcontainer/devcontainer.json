@@ -1,0 +1,35 @@
+{
+    "name": "Archiver Dev Environment",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "golang.go",
+                "ms-vscode.makefile-tools",
+                "github.copilot",
+                "github.copilot-chat"
+            ],
+            "settings": {
+                "go.toolsManagement.checkForUpdates": "local",
+                "go.useLanguageServer": true,
+                "go.gopath": "/go",
+                "go.formatTool": "gofmt",
+                "editor.formatOnSave": true,
+                "editor.codeActionsOnSave": {
+                    "source.organizeImports": true
+                }
+            }
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    "runArgs": [
+        "--env-file", "${localWorkspaceFolder}/.env"
+    ],
+    "postCreateCommand": "go mod download && go mod verify",
+    "remoteUser": "vscode"
+} 
