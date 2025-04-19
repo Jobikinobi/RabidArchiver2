@@ -90,9 +90,16 @@ func (im *InteractiveMode) Start() error {
 
 	// Handle terminal UI events
 	grid := termui.NewGrid()
-	grid.SetRect(0, 0, termui.TerminalDimensions())
+
+	// Get terminal dimensions (width and height)
+	width, height := termui.TerminalDimensions()
+
+	// Set rectangle with the dimensions
+	grid.SetRect(0, 0, width, height)
+
 	termui.Render(grid)
 	uiEvents := termui.PollEvents()
+
 	for {
 		select {
 		case e := <-uiEvents:
@@ -219,29 +226,27 @@ func (im *InteractiveMode) initializeComponents() {
 
 		// Set up grid layout
 		grid.Set(
-			termui.NewRow(infoHeight/termHeight,
+			termui.NewRow(float64(infoHeight)/float64(termHeight),
 				termui.NewCol(1.0, im.infoBox),
 			),
 		)
 
 		// Add a row for each stage gauge
 		for _, gauge := range im.gauges {
-			grid.Items = append(grid.Items,
-				termui.NewRow(float64(stageHeight)/float64(termHeight),
-					termui.NewCol(1.0, gauge),
-				),
+			row := termui.NewRow(float64(stageHeight)/float64(termHeight),
+				termui.NewCol(1.0, gauge),
 			)
+			grid.Items = append(grid.Items, &row)
 		}
 
 		// Add stats and log sections
-		grid.Items = append(grid.Items,
-			termui.NewRow(float64(statsHeight)/float64(termHeight),
-				termui.NewCol(1.0, im.statsTable),
-			),
-			termui.NewRow(float64(logHeight)/float64(termHeight),
-				termui.NewCol(1.0, im.logBox),
-			),
+		statsRow := termui.NewRow(float64(statsHeight)/float64(termHeight),
+			termui.NewCol(1.0, im.statsTable),
 		)
+		logRow := termui.NewRow(float64(logHeight)/float64(termHeight),
+			termui.NewCol(1.0, im.logBox),
+		)
+		grid.Items = append(grid.Items, &statsRow, &logRow)
 	} else {
 		// Simple layout with just overall progress and logs
 		grid.Set(
@@ -257,8 +262,8 @@ func (im *InteractiveMode) initializeComponents() {
 		)
 	}
 
-	termui.Body = grid
-	termui.Render(termui.Body)
+	// Set the grid as the UI component to render
+	termui.Render(grid)
 }
 
 // updateLoop periodically updates the UI components
@@ -269,9 +274,14 @@ func (im *InteractiveMode) updateLoop() {
 	for {
 		select {
 		case <-ticker.C:
+		case <-ticker.C:
 			im.updateComponents()
-			termui.Render(termui.Body)
-		case <-im.stopChan:
+			// Recreate grid with current components
+			grid := termui.NewGrid()
+			width, height := termui.TerminalDimensions()
+			grid.SetRect(0, 0, width, height)
+			im.initializeComponents()
+			termui.Render(grid)
 			return
 		}
 	}
