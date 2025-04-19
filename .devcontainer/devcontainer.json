@@ -1,9 +1,6 @@
 {
     "name": "Archiver Dev Environment",
-    "build": {
-        "dockerfile": "Dockerfile",
-        "context": ".."
-    },
+    "image": "mcr.microsoft.com/devcontainers/go:1.22",
     "customizations": {
         "vscode": {
             "extensions": [
@@ -30,6 +27,6 @@
     "runArgs": [
         "--env-file", "${localWorkspaceFolder}/.env"
     ],
-    "postCreateCommand": "go mod download && go mod verify",
+    "postCreateCommand": "apt-get update && apt-get install -y ffmpeg sqlite3 libsqlite3-dev && go install honnef.co/go/tools/cmd/staticcheck@latest && go install github.com/greptile/greptile/cmd/greptile@latest && go mod download && go mod verify",
     "remoteUser": "vscode"
 } 

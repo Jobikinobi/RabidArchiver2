@@ -52,6 +52,9 @@ summarizes documents, uploads to Backblaze B2, and provides a searchable index.`
 		fmt.Sscanf(envCostCap, "%f", &costCap)
 	}
 
+	// Add subcommands
+	rootCmd.AddCommand(newSearchCommand())
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -69,3 +72,4 @@ func executeArchiver(cmd *cobra.Command, args []string) {
 	// Main processing pipeline will be implemented here
 	fmt.Println("Archiver completed successfully.")
 }
+
