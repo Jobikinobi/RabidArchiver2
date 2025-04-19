@@ -89,7 +89,9 @@ func (im *InteractiveMode) Start() error {
 	}()
 
 	// Handle terminal UI events
-	termui.Render(termui.Body)
+	grid := termui.NewGrid()
+	grid.SetRect(0, 0, termui.TerminalDimensions())
+	termui.Render(grid)
 	uiEvents := termui.PollEvents()
 	for {
 		select {
@@ -102,7 +104,7 @@ func (im *InteractiveMode) Start() error {
 				// Toggle detailed view
 				im.config.ShowDetailedView = !im.config.ShowDetailedView
 				im.initializeComponents()
-				termui.Render(termui.Body)
+				termui.Render(grid)
 			}
 		case <-im.stopChan:
 			termui.Close()
