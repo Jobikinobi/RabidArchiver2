@@ -19,7 +19,7 @@ var (
 	costCap         float64
 	appConfig       *config.Config
 	debugMode       bool
-	interactiveMode bool
+	interactiveMode bool = true // Default to interactive mode
 )
 
 func main() {
@@ -42,7 +42,7 @@ summarizes documents, uploads to Backblaze B2, and provides a searchable index.`
 	rootCmd.Flags().StringVar(&summarize, "summarize", "default", "Summarization level: none, basic, default, or full")
 	rootCmd.Flags().StringVar(&stubMode, "stub-mode", "webloc", "Local stub format: webloc, shortcut, or none")
 	rootCmd.Flags().Float64Var(&costCap, "cost-cap", 5.0, "Maximum LLM spend in USD")
-	rootCmd.Flags().BoolVarP(&interactiveMode, "interactive", "i", false, "Start in interactive mode")
+	rootCmd.Flags().BoolVarP(&interactiveMode, "interactive", "i", true, "Start in interactive mode (default)")
 
 	// Only mark flags as required if not in interactive mode
 	isInteractiveArg := false
