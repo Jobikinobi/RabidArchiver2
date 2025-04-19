@@ -1,0 +1,17 @@
+{
+  "b2_key_id": "",
+  "b2_app_key": "",
+  "b2_bucket": "RabidArchiver",
+  "b2_key_name": "rabidarchiver",
+  "anthropic_api_key": "",
+  "openai_api_key": "",
+  "mistral_api_key": "",
+  "grok_api_key": "",
+  "greptile_api_key": "",
+  "github_token": "",
+  "neon_api_key": "",
+  "brave_search_key": "",
+  "cost_cap_usd": 5.0,
+  "summarize": "default",
+  "stub_mode": "webloc"
+} 
